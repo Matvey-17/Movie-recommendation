@@ -17,19 +17,9 @@ def select(genre):
         cursor = db.cursor()
         cursor.execute(f"SELECT * FROM film WHERE genre = '{genre}'")
         arr_genre = cursor.fetchall()
-        id_random = random.randint(0, len(arr_genre) - 1)
+        id_random = random.choice(range(0, len(arr_genre)))
         film_select = arr_genre[id_random]
     return film_select
-
-
-def call_film(call: telebot.types.CallbackQuery):
-    button = Button()
-    button.add_button(button.bt_more)
-
-    film = select(genres[call.data])
-    bot.send_message(call.message.chat.id,
-                     f'<b>Название:</b> {film[1]}\n\n<b>Жанр:</b> {film[2]}\n\n<b>Описание:</b> {film[3]}\n\n<b>Ссылка:</b> {film[4]}',
-                     parse_mode='html', reply_markup=button.markup)
 
 
 @bot.message_handler(commands=['start'])
@@ -44,16 +34,24 @@ def start(message: telebot.types.Message):
 @bot.callback_query_handler(func=lambda call: call.data in ['ready', 'more'])
 def callback(call: telebot.types.CallbackQuery):
     button = Button()
-    button.add_button(button.bt_drama, button.bt_comedy)
-    button.add_button(button.bt_melodrama, button.bt_detective)
-    button.add_button(button.bt_thriller, button.bt_cartoon)
+    button.add_button(*button.arr_bt)
 
     bot.send_message(call.message.chat.id, 'Супер! Выбери жанр 🎬', reply_markup=button.markup)
 
 
 @bot.callback_query_handler(func=lambda call: True)
 def callback_film(call):
-    call_film(call)
+    button = Button()
+    button.add_button(button.bt_more)
+
+    film = select(genres[call.data])
+    bot.send_message(call.message.chat.id,
+                     f'{telebot.formatting.hbold('Название:')} {film[1]}\n\n'
+                     f'{telebot.formatting.hbold('Жанр:')} {film[2]}\n\n'
+                     f'{telebot.formatting.hbold('Описание:')} {film[3]}\n\n'
+                     f'{telebot.formatting.hlink('Ссылка', film[4])}',
+                     parse_mode='HTML',
+                     reply_markup=button.markup)
 
 
 @bot.message_handler(content_types=['text'])

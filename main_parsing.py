@@ -12,17 +12,17 @@ arr_all_genre = soup.find_all('div', class_='p-itemevent-small__info')
 arr_all_url = soup.find_all('a',
                             class_='link link_inline link-holder link-holder_itemevent link-holder_itemevent_small')
 
-arr_all_url_film = []
-for url in arr_all_url:
-    arr_all_url_film.append(url['href'])
+arr_all_url_film = [var_url['href'] for var_url in arr_all_url]
 
-arr_all_desc = []
-for url_page in arr_all_url_film:
-    page_film = requests.get(url_film + url_page)
-    soup_film = BeautifulSoup(page_film.text, 'html.parser')
-    desc = soup_film.find('div',
-                          class_='text text_inline text_light_medium text_fixed valign_baseline p-movie-info__description-text')
-    arr_all_desc.append(desc.text)
+arr_all_desc = [BeautifulSoup(requests.get(url_film + url_page).text, 'html.parser').find('div',
+                                                                                          class_='text text_inline '
+                                                                                                 'text_light_medium '
+                                                                                                 'text_fixed '
+                                                                                                 'valign_baseline '
+                                                                                                 'p-movie'
+                                                                                                 '-info__description'
+                                                                                                 '-text').text
+                for url_page in arr_all_url_film]
 
 arr_genre = []
 for i in arr_all_genre[::2]:
@@ -31,9 +31,7 @@ for i in arr_all_genre[::2]:
     else:
         arr_genre.append(i.find_all('a', class_='p_link_black')[2].text)
 
-arr_name = []
-for name in arr_all_name[0:len(arr_all_name) - 3]:
-    arr_name.append(name.text)
+arr_name = [name.text for name in arr_all_name[0:len(arr_all_name) - 3]]
 
 film = {}
 for name_film, name_genre, desc_film in zip(arr_name, arr_genre, arr_all_desc):
